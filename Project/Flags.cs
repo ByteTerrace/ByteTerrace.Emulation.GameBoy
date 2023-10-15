@@ -4,7 +4,7 @@ sealed class Flags
 {
     private Registers m_registers;
 
-    private byte Value {
+    private uint Value {
         get => m_registers.F;
     }
 

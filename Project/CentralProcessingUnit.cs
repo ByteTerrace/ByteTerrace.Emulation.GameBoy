@@ -21,6 +21,7 @@ sealed class CentralProcessingUnit
     }
 
     public void Run() {
+        var flags = 0U;
         var memory = Memory;
         var programCounter = ProgramCounter;
         var registers = m_registers;
@@ -61,6 +62,11 @@ sealed class CentralProcessingUnit
                     break;
                 case 0xBE: // CP HL
                     break;
+                case 0xC6: // ADD N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Add(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
+                    break;
                 case 0xC9: // RET
                     break;
                 case 0xCB: // ???
@@ -79,11 +85,39 @@ sealed class CentralProcessingUnit
                             throw new NotSupportedException();
                     }
                     break;
+                case 0xCE: // ADC N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Adc(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
+                    break;
+                case 0xD6: // SUB N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Sub(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
+                    break;
                 case 0xD9: // RETI
                     break;
-                case 0xE9: // JP HL
+                case 0xDE: // SBC N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
+                    break;
+                case 0xE6: // AND N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.And(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
+                    break;
+                case 0xEE: // XOR N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Xor(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
                     break;
                 case 0xF3: // DI
+                    break;
+                case 0xF6: // OR N
+                    programCounter = registers.IncrementProgramCounter();
+                    registers.A = registers.A.Or(flags: ref flags, other: memory[index: programCounter]);
+                    registers.F = ((byte)flags);
                     break;
                 case 0xFB: // EI
                     break;
