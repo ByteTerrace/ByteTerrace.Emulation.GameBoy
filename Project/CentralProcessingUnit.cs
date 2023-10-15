@@ -33,23 +33,79 @@ sealed class CentralProcessingUnit
         switch (memory[index: programCounter]) {
             case 0x00: // NOOP
                 break;
+            case 0x04: // INC B
+                registers.B = registers.B.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x05: // DEC B
+                registers.B = registers.B.Dec(ref flags);
+                registers.F = ((byte)flags);
+                break;
             case 0x07: // RLCA
+                break;
+            case 0x0C: // INC C
+                registers.C = registers.C.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x0D: // DEC C
+                registers.C = registers.C.Dec(ref flags);
+                registers.F = ((byte)flags);
                 break;
             case 0x0F: // RRCA
                 break;
             case 0x10: // STOP
                 break;
+            case 0x14: // INC D
+                registers.D = registers.D.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x15: // DEC D
+                registers.D = registers.D.Dec(ref flags);
+                registers.F = ((byte)flags);
+                break;
             case 0x17: // RLA
+                break;
+            case 0x1C: // INC E
+                registers.E = registers.E.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x1D: // DEC E
+                registers.E = registers.E.Dec(ref flags);
+                registers.F = ((byte)flags);
                 break;
             case 0x1F: // RRA
                 break;
+            case 0x24: // INC H
+                registers.H = registers.H.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x25: // DEC H
+                registers.H = registers.H.Dec(ref flags);
+                registers.F = ((byte)flags);
+                break;
             case 0x27: // DAA
+                break;
+            case 0x2C: // INC L
+                registers.L = registers.L.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x2D: // DEC L
+                registers.L = registers.L.Dec(ref flags);
+                registers.F = ((byte)flags);
                 break;
             case 0x2F: // CPL
                 break;
             case 0x34: // INC HL
                 break;
             case 0x35: // DEC HL
+                break;
+            case 0x3C: // INC A
+                registers.A = registers.A.Inc(ref flags);
+                registers.F = ((byte)flags);
+                break;
+            case 0x3D: // DEC A
+                registers.A = registers.A.Dec(ref flags);
+                registers.F = ((byte)flags);
                 break;
             case 0x76: // HALT
                 break;
@@ -263,7 +319,35 @@ sealed class CentralProcessingUnit
                 registers.A = registers.A.Or(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
+            case 0xB8: // CP B
+                registers.A.Cp(flags: ref flags, other: registers.B);
+                registers.F = ((byte)flags);
+                break;
+            case 0xB9: // CP C
+                registers.A.Cp(flags: ref flags, other: registers.C);
+                registers.F = ((byte)flags);
+                break;
+            case 0xBA: // CP D
+                registers.A.Cp(flags: ref flags, other: registers.D);
+                registers.F = ((byte)flags);
+                break;
+            case 0xBB: // CP E
+                registers.A.Cp(flags: ref flags, other: registers.E);
+                registers.F = ((byte)flags);
+                break;
+            case 0xBC: // CP H
+                registers.A.Cp(flags: ref flags, other: registers.H);
+                registers.F = ((byte)flags);
+                break;
+            case 0xBD: // CP L
+                registers.A.Cp(flags: ref flags, other: registers.L);
+                registers.F = ((byte)flags);
+                break;
             case 0xBE: // CP HL
+                break;
+            case 0xBF: // CP A
+                registers.A.Cp(flags: ref flags, other: registers.A);
+                registers.F = ((byte)flags);
                 break;
             case 0xC6: // ADD N
                 programCounter = registers.IncrementProgramCounter();
