@@ -42,6 +42,10 @@ sealed class CentralProcessingUnit
                 registers.B = registers.B.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
+            case 0x06: // LD B, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.B = memory[index: programCounter];
+                break;
             case 0x07: // RLCA
                 break;
             case 0x0C: // INC C
@@ -51,6 +55,10 @@ sealed class CentralProcessingUnit
             case 0x0D: // DEC C
                 registers.C = registers.C.Dec(ref flags);
                 registers.F = ((byte)flags);
+                break;
+            case 0x0E: // LD C, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.C = memory[index: programCounter];
                 break;
             case 0x0F: // RRCA
                 break;
@@ -64,6 +72,10 @@ sealed class CentralProcessingUnit
                 registers.D = registers.D.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
+            case 0x16: // LD D, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.D = memory[index: programCounter];
+                break;
             case 0x17: // RLA
                 break;
             case 0x1C: // INC E
@@ -73,6 +85,10 @@ sealed class CentralProcessingUnit
             case 0x1D: // DEC E
                 registers.E = registers.E.Dec(ref flags);
                 registers.F = ((byte)flags);
+                break;
+            case 0x1E: // LD E, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.E = memory[index: programCounter];
                 break;
             case 0x1F: // RRA
                 break;
@@ -84,6 +100,10 @@ sealed class CentralProcessingUnit
                 registers.H = registers.H.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
+            case 0x26: // LD H, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.H = memory[index: programCounter];
+                break;
             case 0x27: // DAA
                 break;
             case 0x2C: // INC L
@@ -93,6 +113,10 @@ sealed class CentralProcessingUnit
             case 0x2D: // DEC L
                 registers.L = registers.L.Dec(ref flags);
                 registers.F = ((byte)flags);
+                break;
+            case 0x2E: // LD L, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.L = memory[index: programCounter];
                 break;
             case 0x2F: // CPL
                 break;
@@ -107,6 +131,10 @@ sealed class CentralProcessingUnit
             case 0x3D: // DEC A
                 registers.A = registers.A.Dec(ref flags);
                 registers.F = ((byte)flags);
+                break;
+            case 0x3E: // LD A, N
+                programCounter = registers.IncrementProgramCounter();
+                registers.A = memory[index: programCounter];
                 break;
             case 0x40: // LD B, B
                 break;
