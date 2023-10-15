@@ -46,7 +46,7 @@ public static class ArithmeticLogicUnit
 
         return ((byte)result);
     }
-    public static byte Cp(this byte value, byte other, ref uint flags) {
+    public static void Cp(this byte value, byte other, ref uint flags) {
         var z = Convert.ToByte(value: (0 == ((value - other) & 0xFF)));
         var n = 1;
         var h = Convert.ToByte(value: ((other & 0xF) > (value & 0xF)));
@@ -58,8 +58,6 @@ public static class ArithmeticLogicUnit
           | (h << 5)
           | (c << 4)
         ));
-
-        return value;
     }
     public static byte Dec(this byte value, ref uint flags) {
         var result = ((value - 1) & 0xFF);
