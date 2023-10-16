@@ -33,6 +33,4 @@ struct Registers
     public ushort PC;
     [FieldOffset(offset: 8)]
     public ushort SP;
-
-    public ushort IncrementProgramCounter() => ++PC;
 }

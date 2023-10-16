@@ -46,8 +46,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x06: // LD B, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.B = memory[index: programCounter];
+                registers.B = memory[index: ++programCounter];
                 break;
             case 0x07: // RLCA
                 break;
@@ -63,8 +62,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x0E: // LD C, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.C = memory[index: programCounter];
+                registers.C = memory[index: ++programCounter];
                 break;
             case 0x0F: // RRCA
                 break;
@@ -82,8 +80,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x16: // LD D, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.D = memory[index: programCounter];
+                registers.D = memory[index: ++programCounter];
                 break;
             case 0x17: // RLA
                 break;
@@ -99,8 +96,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x1E: // LD E, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.E = memory[index: programCounter];
+                registers.E = memory[index: ++programCounter];
                 break;
             case 0x1F: // RRA
                 break;
@@ -113,8 +109,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x26: // LD H, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.H = memory[index: programCounter];
+                registers.H = memory[index: ++programCounter];
                 break;
             case 0x27: // DAA
                 break;
@@ -129,8 +124,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x2E: // LD L, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.L = memory[index: programCounter];
+                registers.L = memory[index: ++programCounter];
                 break;
             case 0x2F: // CPL
                 break;
@@ -151,8 +145,7 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x3E: // LD A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = memory[index: programCounter];
+                registers.A = memory[index: ++programCounter];
                 break;
             case 0x3F: // CCF
                 break;
@@ -365,6 +358,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x86: // ADD A, (HL)
+                registers.A = registers.A.Add(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0x87: // ADD A, A
                 registers.A = registers.A.Add(flags: ref flags, other: registers.A);
@@ -395,6 +390,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x8E: // ADC A, (HL)
+                registers.A = registers.A.Adc(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0x8F: // ADC A, A
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.A);
@@ -425,6 +422,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x96: // SUB A, (HL)
+                registers.A = registers.A.Sub(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0x97: // SUB A, A
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.A);
@@ -455,6 +454,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0x9E: // SBC A, (HL)
+                registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0x9F: // SBC A, A
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.A);
@@ -485,6 +486,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xA6: // AND A, (HL)
+                registers.A = registers.A.And(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0xA7: // AND A, A
                 registers.A = registers.A.And(flags: ref flags, other: registers.A);
@@ -515,6 +518,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xAE: // XOR A, (HL)
+                registers.A = registers.A.Xor(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0xAF: // XOR A, A
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.A);
@@ -545,6 +550,8 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xB6: // OR A, (HL)
+                registers.A = registers.A.Or(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0xB7: // OR A, A
                 registers.A = registers.A.Or(flags: ref flags, other: registers.A);
@@ -575,59 +582,52 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xBE: // CP A, (HL)
+                registers.A.Cp(flags: ref flags, other: memory[index: registers.HL]);
+                registers.F = ((byte)flags);
                 break;
             case 0xBF: // CP A, A
                 registers.A.Cp(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
             case 0xC6: // ADD A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Add(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Add(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xC9: // RET
                 break;
             case 0xCB: // ???
-                programCounter = registers.IncrementProgramCounter();
-
-                switch (memory[index: programCounter]) {
+                switch (memory[index: ++programCounter]) {
                     default:
                         throw new NotSupportedException();
                 }
 
                 break;
             case 0xCE: // ADC A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Adc(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Adc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xD6: // SUB A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Sub(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Sub(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xD9: // RETI
                 break;
             case 0xDE: // SBC A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xE6: // AND A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.And(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.And(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xEE: // XOR A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Xor(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Xor(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xF3: // DI
                 break;
             case 0xF6: // OR A, D8
-                programCounter = registers.IncrementProgramCounter();
-                registers.A = registers.A.Or(flags: ref flags, other: memory[index: programCounter]);
+                registers.A = registers.A.Or(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xFB: // EI
