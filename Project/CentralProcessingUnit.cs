@@ -27,6 +27,7 @@ sealed class CentralProcessingUnit
         var programCounter = m_registers.PC;
         var registers = m_registers;
         var tickCount = ++m_tickCount;
+        var tempU16 = ushort.MinValue;
 
         switch (memory[index: programCounter]) {
             case 0x00: // NOOP
@@ -133,10 +134,10 @@ sealed class CentralProcessingUnit
             case 0x1F: // RRA
                 break;
             case 0x20: // JR NZ, D8
-                ++programCounter;
+                tempU16 = memory[index: ++programCounter];
 
                 if (!Flags.Z) {
-                    programCounter += memory[index: programCounter];
+                    programCounter += tempU16;
                 }
                 break;
             case 0x21: // LD HL, D16
@@ -163,10 +164,10 @@ sealed class CentralProcessingUnit
             case 0x27: // DAA
                 break;
             case 0x28: // JR Z, D8
-                ++programCounter;
+                tempU16 = memory[index: ++programCounter];
 
                 if (Flags.Z) {
-                    programCounter += memory[index: programCounter];
+                    programCounter += tempU16;
                 }
                 break;
             case 0x29: // ADD HL, HL
@@ -194,10 +195,10 @@ sealed class CentralProcessingUnit
                 registers.A = registers.A.Cpl(flags: ref flags);
                 break;
             case 0x30: // JR NC, D8
-                ++programCounter;
+                tempU16 = memory[index: ++programCounter];
 
                 if (!Flags.C) {
-                    programCounter += memory[index: programCounter];
+                    programCounter += tempU16;
                 }
                 break;
             case 0x31: // LD SP, D16
@@ -223,10 +224,10 @@ sealed class CentralProcessingUnit
                 ArithmeticLogicUnit.Scf(flags: ref flags);
                 break;
             case 0x38: // JR C, D8
-                ++programCounter;
+                tempU16 = memory[index: ++programCounter];
 
                 if (Flags.C) {
-                    programCounter += memory[index: programCounter];
+                    programCounter += tempU16;
                 }
                 break;
             case 0x39: // ADD HL, SP
@@ -696,8 +697,24 @@ sealed class CentralProcessingUnit
             case 0xC0: // RET NZ
                 break;
             case 0xC1: // POP BC
+                memory[index: registers.SP++] = registers.C;
+                memory[index: registers.SP++] = registers.B;
+                break;
+            case 0xC2: // JP NZ, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (!Flags.Z) {
+                    programCounter = tempU16;
+                }
+                break;
+            case 0xC3: // JP D16
+                programCounter = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+                break;
+            case 0xC4: // CALL NZ, D16
                 break;
             case 0xC5: // PUSH BC
+                memory[index: registers.SP--] = registers.B;
+                memory[index: registers.SP--] = registers.C;
                 break;
             case 0xC6: // ADD A, D8
                 registers.A = registers.A.Add(flags: ref flags, other: memory[index: ++programCounter]);
@@ -709,12 +726,23 @@ sealed class CentralProcessingUnit
                 break;
             case 0xC9: // RET
                 break;
+            case 0xCA: // JP Z, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (Flags.Z) {
+                    programCounter = tempU16;
+                }
+                break;
             case 0xCB: // 0xCB
                 switch (memory[index: ++programCounter]) {
                     default:
                         throw new NotSupportedException();
                 }
 
+                break;
+            case 0xCC: // CALL Z, D16
+                break;
+            case 0xCD: // CALL D16
                 break;
             case 0xCE: // ADC A, D8
                 registers.A = registers.A.Adc(flags: ref flags, other: memory[index: ++programCounter]);
@@ -725,8 +753,23 @@ sealed class CentralProcessingUnit
             case 0xD0: // RET NC
                 break;
             case 0xD1: // POP DE
+                memory[index: registers.SP++] = registers.E;
+                memory[index: registers.SP++] = registers.D;
+                break;
+            case 0xD2: // JP NC, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (!Flags.C) {
+                    programCounter = tempU16;
+                }
+                break;
+            case 0xD3: // UNDEFINED
+                break;
+            case 0xD4: // CALL NC, D16
                 break;
             case 0xD5: // PUSH DE
+                memory[index: registers.SP--] = registers.D;
+                memory[index: registers.SP--] = registers.E;
                 break;
             case 0xD6: // SUB A, D8
                 registers.A = registers.A.Sub(flags: ref flags, other: memory[index: ++programCounter]);
@@ -738,15 +781,40 @@ sealed class CentralProcessingUnit
                 break;
             case 0xD9: // RETI
                 break;
+            case 0xDA: // JP C, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (Flags.C) {
+                    programCounter = tempU16;
+                }
+                break;
+            case 0xDB: // UNDEFINED
+                break;
+            case 0xDC: // CALL C, D16
+                break;
+            case 0xDD: // UNDEFINED
+                break;
             case 0xDE: // SBC A, D8
                 registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xDF: // RST 3
                 break;
+            case 0xE0: // LD (D8), A
+                break;
             case 0xE1: // POP HL
+                memory[index: registers.SP++] = registers.L;
+                memory[index: registers.SP++] = registers.H;
+                break;
+            case 0xE2: // LD (C), A
+                break;
+            case 0xE3: // UNDEFINED
+                break;
+            case 0xE4: // UNDEFINED
                 break;
             case 0xE5: // PUSH HL
+                memory[index: registers.SP--] = registers.H;
+                memory[index: registers.SP--] = registers.L;
                 break;
             case 0xE6: // AND A, D8
                 registers.A = registers.A.And(flags: ref flags, other: memory[index: ++programCounter]);
@@ -754,7 +822,18 @@ sealed class CentralProcessingUnit
                 break;
             case 0xE7: // RST 4
                 break;
+            case 0xE8: // ADD SP, D8
+                break;
             case 0xE9: // JP HL
+                programCounter = registers.HL;
+                break;
+            case 0xEA: // LD (D16), A
+                break;
+            case 0xEB: // UNDEFINED
+                break;
+            case 0xEC: // UNDEFINED
+                break;
+            case 0xED: // UNDEFINED
                 break;
             case 0xEE: // XOR A, D8
                 registers.A = registers.A.Xor(flags: ref flags, other: memory[index: ++programCounter]);
@@ -762,11 +841,21 @@ sealed class CentralProcessingUnit
                 break;
             case 0xEF: // RST 5
                 break;
+            case 0xF0: // LD A, (D8)
+                break;
             case 0xF1: // POP AF
+                memory[index: registers.SP++] = registers.F;
+                memory[index: registers.SP++] = registers.A;
+                break;
+            case 0xF2: // LD A, (C)
                 break;
             case 0xF3: // DI
                 break;
+            case 0xF4: // UNDEFINED
+                break;
             case 0xF5: // PUSH AF
+                memory[index: registers.SP--] = registers.A;
+                memory[index: registers.SP--] = registers.F;
                 break;
             case 0xF6: // OR A, D8
                 registers.A = registers.A.Or(flags: ref flags, other: memory[index: ++programCounter]);
@@ -774,7 +863,18 @@ sealed class CentralProcessingUnit
                 break;
             case 0xF7: // RST 6
                 break;
+            case 0xF8: // ???
+                break;
+            case 0xF9: // LD SP, HL
+                registers.SP = registers.HL;
+                break;
+            case 0xFA: // LD A, (D16)
+                break;
             case 0xFB: // EI
+                break;
+            case 0xFC: // UNDEFINED
+                break;
+            case 0xFD: // UNDEFINED
                 break;
             case 0xFE: // CP A, D8
                 registers.A.Cp(flags: ref flags, other: memory[index: ++programCounter]);
