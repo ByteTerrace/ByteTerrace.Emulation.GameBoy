@@ -31,6 +31,14 @@ struct Registers
     public byte L;
     [FieldOffset(offset: 10)]
     public ushort PC;
+    [FieldOffset(offset: 10)]
+    public byte PC_C;
+    [FieldOffset(offset: 11)]
+    public byte PC_P;
     [FieldOffset(offset: 8)]
     public ushort SP;
+    [FieldOffset(offset: 8)]
+    public byte SP_P;
+    [FieldOffset(offset: 9)]
+    public byte SP_S;
 }

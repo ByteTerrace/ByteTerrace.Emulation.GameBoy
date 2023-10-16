@@ -39,12 +39,30 @@ public static class ArithmeticLogicUnit
 
         return ((byte)result);
     }
+    public static ushort Add(this ushort value, ushort other, ref uint flags) {
+        var sum = (value + other);
+        var result = (sum & 0xFFFF);
+        var n = false;
+        var h = (((value & 0x0FFF) + (other & 0x0FFF)) > 0x0FFF);
+        var c = (sum > 0xFFFF);
+
+        BitHelper.SetFlag(flag: n, n: 6, value: ref flags);
+        BitHelper.SetFlag(flag: h, n: 5, value: ref flags);
+        BitHelper.SetFlag(flag: c, n: 4, value: ref flags);
+
+        return ((ushort)result);
+    }
     public static byte And(this byte value, byte other, ref uint flags) {
         var result = (value & other);
 
         flags = ((byte)(32 | (Convert.ToByte(value: (0 == result)) << 7)));
 
         return ((byte)result);
+    }
+    public static void Ccf(ref uint flags) {
+        BitHelper.SetFlag(flag: false, n: 6, value: ref flags);
+        BitHelper.SetFlag(flag: false, n: 5, value: ref flags);
+        BitHelper.SetFlag(flag: !BitHelper.HasFlag(n: 4, value: flags), n: 4, value: ref flags);
     }
     public static void Cp(this byte value, byte other, ref uint flags) {
         var z = Convert.ToByte(value: (0 == ((value - other) & 0xFF)));
@@ -58,6 +76,12 @@ public static class ArithmeticLogicUnit
           | (h << 5)
           | (c << 4)
         ));
+    }
+    public static byte Cpl(this byte value, ref uint flags) {
+        BitHelper.SetFlag(flag: true, n: 6, value: ref flags);
+        BitHelper.SetFlag(flag: true, n: 5, value: ref flags);
+
+        return ((byte)~value);
     }
     public static byte Dec(this byte value, ref uint flags) {
         var result = ((value - 1) & 0xFF);
@@ -106,6 +130,11 @@ public static class ArithmeticLogicUnit
         ));
 
         return ((byte)result);
+    }
+    public static void Scf(ref uint flags) {
+        BitHelper.SetFlag(flag: false, n: 6, value: ref flags);
+        BitHelper.SetFlag(flag: false, n: 5, value: ref flags);
+        BitHelper.SetFlag(flag: true, n: 4, value: ref flags);
     }
     public static byte Sub(this byte value, byte other, ref uint flags) {
         var result = ((value - other) & 0xFF);

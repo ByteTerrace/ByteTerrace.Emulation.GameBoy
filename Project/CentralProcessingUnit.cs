@@ -5,11 +5,8 @@ sealed class CentralProcessingUnit
     private Registers m_registers;
     private uint m_tickCount;
 
-    public byte Accumulator { get => m_registers.A; }
     public Flags Flags { get; }
     public Memory Memory { get; }
-    public ushort ProgramCounter { get => m_registers.PC; }
-    public ushort StackPointer { get => m_registers.SP; }
     public uint TickCount { get => m_tickCount; }
 
     public CentralProcessingUnit() {
@@ -27,22 +24,29 @@ sealed class CentralProcessingUnit
     public bool MoveNext() {
         var flags = 0U;
         var memory = Memory;
-        var programCounter = ProgramCounter;
+        var programCounter = m_registers.PC;
         var registers = m_registers;
         var tickCount = ++m_tickCount;
 
         switch (memory[index: programCounter]) {
             case 0x00: // NOOP
                 break;
+            case 0x01: // LD BC, D16
+                registers.C = memory[index: ++programCounter];
+                registers.B = memory[index: ++programCounter];
+                break;
             case 0x02: // LD (BC), A
                 memory[index: registers.BC] = registers.A;
                 break;
+            case 0x03: // INC BC
+                registers.BC++;
+                break;
             case 0x04: // INC B
-                registers.B = registers.B.Inc(ref flags);
+                registers.B = registers.B.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x05: // DEC B
-                registers.B = registers.B.Dec(ref flags);
+                registers.B = registers.B.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x06: // LD B, D8
@@ -50,15 +54,26 @@ sealed class CentralProcessingUnit
                 break;
             case 0x07: // RLCA
                 break;
+            case 0x08: // LD (D16), SP
+                memory[index: ++programCounter] = registers.SP_P;
+                memory[index: ++programCounter] = registers.SP_S;
+                break;
+            case 0x09: // ADD HL, BC
+                registers.HL = registers.HL.Add(flags: ref flags, other: registers.BC);
+                registers.F = ((byte)flags);
+                break;
             case 0x0A: // LD A, (BC)
                 registers.A = memory[index: registers.BC];
                 break;
+            case 0x0B: // DEC BC
+                registers.BC--;
+                break;
             case 0x0C: // INC C
-                registers.C = registers.C.Inc(ref flags);
+                registers.C = registers.C.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x0D: // DEC C
-                registers.C = registers.C.Dec(ref flags);
+                registers.C = registers.C.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x0E: // LD C, D8
@@ -68,15 +83,22 @@ sealed class CentralProcessingUnit
                 break;
             case 0x10: // STOP
                 break;
+            case 0x11: // LD DE, D16
+                registers.E = memory[index: ++programCounter];
+                registers.D = memory[index: ++programCounter];
+                break;
             case 0x12: // LD (DE), A
                 memory[index: registers.DE] = registers.A;
                 break;
+            case 0x13: // INC DE
+                registers.DE++;
+                break;
             case 0x14: // INC D
-                registers.D = registers.D.Inc(ref flags);
+                registers.D = registers.D.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x15: // DEC D
-                registers.D = registers.D.Dec(ref flags);
+                registers.D = registers.D.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x16: // LD D, D8
@@ -84,15 +106,25 @@ sealed class CentralProcessingUnit
                 break;
             case 0x17: // RLA
                 break;
+            case 0x18: // JR D8
+                programCounter += memory[index: ++programCounter];
+                break;
+            case 0x19: // ADD HL, DE
+                registers.HL = registers.HL.Add(flags: ref flags, other: registers.DE);
+                registers.F = ((byte)flags);
+                break;
             case 0x1A: // LD A, (DE)
                 registers.A = memory[index: registers.DE];
                 break;
+            case 0x1B: // DEC DE
+                registers.DE--;
+                break;
             case 0x1C: // INC E
-                registers.E = registers.E.Inc(ref flags);
+                registers.E = registers.E.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x1D: // DEC E
-                registers.E = registers.E.Dec(ref flags);
+                registers.E = registers.E.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x1E: // LD E, D8
@@ -100,12 +132,29 @@ sealed class CentralProcessingUnit
                 break;
             case 0x1F: // RRA
                 break;
+            case 0x20: // JR NZ, D8
+                ++programCounter;
+
+                if (!Flags.Z) {
+                    programCounter += memory[index: programCounter];
+                }
+                break;
+            case 0x21: // LD HL, D16
+                registers.L = memory[index: ++programCounter];
+                registers.H = memory[index: ++programCounter];
+                break;
+            case 0x22: // LD (HL++), A
+                memory[index: registers.HL++] = registers.A;
+                break;
+            case 0x23: // INC HL
+                registers.HL++;
+                break;
             case 0x24: // INC H
-                registers.H = registers.H.Inc(ref flags);
+                registers.H = registers.H.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x25: // DEC H
-                registers.H = registers.H.Dec(ref flags);
+                registers.H = registers.H.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x26: // LD H, D8
@@ -113,41 +162,96 @@ sealed class CentralProcessingUnit
                 break;
             case 0x27: // DAA
                 break;
+            case 0x28: // JR Z, D8
+                ++programCounter;
+
+                if (Flags.Z) {
+                    programCounter += memory[index: programCounter];
+                }
+                break;
             case 0x29: // ADD HL, HL
+                registers.HL = registers.HL.Add(flags: ref flags, other: registers.HL);
+                registers.F = ((byte)flags);
+                break;
+            case 0x2A: // LD A, (HL++)
+                registers.A = memory[index: registers.HL++];
+                break;
+            case 0x2B: // DEC HL
+                registers.HL--;
                 break;
             case 0x2C: // INC L
-                registers.L = registers.L.Inc(ref flags);
+                registers.L = registers.L.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x2D: // DEC L
-                registers.L = registers.L.Dec(ref flags);
+                registers.L = registers.L.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x2E: // LD L, D8
                 registers.L = memory[index: ++programCounter];
                 break;
             case 0x2F: // CPL
+                registers.A = registers.A.Cpl(flags: ref flags);
+                break;
+            case 0x30: // JR NC, D8
+                ++programCounter;
+
+                if (!Flags.C) {
+                    programCounter += memory[index: programCounter];
+                }
+                break;
+            case 0x31: // LD SP, D16
+                registers.SP_P = memory[index: ++programCounter];
+                registers.SP_S = memory[index: ++programCounter];
+                break;
+            case 0x32: // LD (HL--), A
+                memory[index: registers.HL--] = registers.A;
+                break;
+            case 0x33: // INC SP
+                registers.SP++;
                 break;
             case 0x34: // INC (HL)
+                memory[index: registers.HL] = memory[index: registers.HL].Inc(flags: ref flags);
                 break;
             case 0x35: // DEC (HL)
+                memory[index: registers.HL] = memory[index: registers.HL].Dec(flags: ref flags);
                 break;
             case 0x36: // LD (HL), D8
+                memory[index: registers.HL] = memory[index: ++programCounter];
                 break;
             case 0x37: // SCF
+                ArithmeticLogicUnit.Scf(flags: ref flags);
+                break;
+            case 0x38: // JR C, D8
+                ++programCounter;
+
+                if (Flags.C) {
+                    programCounter += memory[index: programCounter];
+                }
+                break;
+            case 0x39: // ADD HL, SP
+                registers.HL = registers.HL.Add(flags: ref flags, other: registers.SP);
+                registers.F = ((byte)flags);
+                break;
+            case 0x3A: // LD A, (HL--)
+                registers.A = memory[index: registers.HL--];
+                break;
+            case 0x3B: // DEC SP
+                registers.SP--;
                 break;
             case 0x3C: // INC A
-                registers.A = registers.A.Inc(ref flags);
+                registers.A = registers.A.Inc(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x3D: // DEC A
-                registers.A = registers.A.Dec(ref flags);
+                registers.A = registers.A.Dec(flags: ref flags);
                 registers.F = ((byte)flags);
                 break;
             case 0x3E: // LD A, D8
                 registers.A = memory[index: ++programCounter];
                 break;
             case 0x3F: // CCF
+                ArithmeticLogicUnit.Ccf(flags: ref flags);
                 break;
             case 0x40: // LD B, B
                 break;
@@ -605,7 +709,7 @@ sealed class CentralProcessingUnit
                 break;
             case 0xC9: // RET
                 break;
-            case 0xCB: // ???
+            case 0xCB: // 0xCB
                 switch (memory[index: ++programCounter]) {
                     default:
                         throw new NotSupportedException();
@@ -681,6 +785,8 @@ sealed class CentralProcessingUnit
             default:
                 throw new NotSupportedException();
         }
+
+        registers.PC = programCounter;
 
         return true;
     }
