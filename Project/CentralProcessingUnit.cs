@@ -34,6 +34,9 @@ sealed class CentralProcessingUnit
         switch (memory[index: programCounter]) {
             case 0x00: // NOOP
                 break;
+            case 0x02: // LD (BC), A
+                memory[index: registers.BC] = registers.A;
+                break;
             case 0x04: // INC B
                 registers.B = registers.B.Inc(ref flags);
                 registers.F = ((byte)flags);
@@ -42,11 +45,14 @@ sealed class CentralProcessingUnit
                 registers.B = registers.B.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x06: // LD B, N
+            case 0x06: // LD B, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.B = memory[index: programCounter];
                 break;
             case 0x07: // RLCA
+                break;
+            case 0x0A: // LD A, (BC)
+                registers.A = memory[index: registers.BC];
                 break;
             case 0x0C: // INC C
                 registers.C = registers.C.Inc(ref flags);
@@ -56,13 +62,16 @@ sealed class CentralProcessingUnit
                 registers.C = registers.C.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x0E: // LD C, N
+            case 0x0E: // LD C, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.C = memory[index: programCounter];
                 break;
             case 0x0F: // RRCA
                 break;
             case 0x10: // STOP
+                break;
+            case 0x12: // LD (DE), A
+                memory[index: registers.DE] = registers.A;
                 break;
             case 0x14: // INC D
                 registers.D = registers.D.Inc(ref flags);
@@ -72,11 +81,14 @@ sealed class CentralProcessingUnit
                 registers.D = registers.D.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x16: // LD D, N
+            case 0x16: // LD D, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.D = memory[index: programCounter];
                 break;
             case 0x17: // RLA
+                break;
+            case 0x1A: // LD A, (DE)
+                registers.A = memory[index: registers.DE];
                 break;
             case 0x1C: // INC E
                 registers.E = registers.E.Inc(ref flags);
@@ -86,7 +98,7 @@ sealed class CentralProcessingUnit
                 registers.E = registers.E.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x1E: // LD E, N
+            case 0x1E: // LD E, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.E = memory[index: programCounter];
                 break;
@@ -100,11 +112,13 @@ sealed class CentralProcessingUnit
                 registers.H = registers.H.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x26: // LD H, N
+            case 0x26: // LD H, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.H = memory[index: programCounter];
                 break;
             case 0x27: // DAA
+                break;
+            case 0x29: // ADD HL, HL
                 break;
             case 0x2C: // INC L
                 registers.L = registers.L.Inc(ref flags);
@@ -114,15 +128,19 @@ sealed class CentralProcessingUnit
                 registers.L = registers.L.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x2E: // LD L, N
+            case 0x2E: // LD L, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.L = memory[index: programCounter];
                 break;
             case 0x2F: // CPL
                 break;
-            case 0x34: // INC HL
+            case 0x34: // INC (HL)
                 break;
-            case 0x35: // DEC HL
+            case 0x35: // DEC (HL)
+                break;
+            case 0x36: // LD (HL), D8
+                break;
+            case 0x37: // SCF
                 break;
             case 0x3C: // INC A
                 registers.A = registers.A.Inc(ref flags);
@@ -132,9 +150,11 @@ sealed class CentralProcessingUnit
                 registers.A = registers.A.Dec(ref flags);
                 registers.F = ((byte)flags);
                 break;
-            case 0x3E: // LD A, N
+            case 0x3E: // LD A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = memory[index: programCounter];
+                break;
+            case 0x3F: // CCF
                 break;
             case 0x40: // LD B, B
                 break;
@@ -153,7 +173,8 @@ sealed class CentralProcessingUnit
             case 0x45: // LD B, L
                 registers.B = registers.L;
                 break;
-            case 0x46: // LD B, HL
+            case 0x46: // LD B, (HL)
+                registers.B = memory[index: registers.HL];
                 break;
             case 0x47: // LD B, A
                 registers.B = registers.A;
@@ -175,7 +196,8 @@ sealed class CentralProcessingUnit
             case 0x4D: // LD C, L
                 registers.C = registers.L;
                 break;
-            case 0x4E: // LD C, HL
+            case 0x4E: // LD C, (HL)
+                registers.C = memory[index: registers.HL];
                 break;
             case 0x4F: // LD C, A
                 registers.C = registers.A;
@@ -197,7 +219,8 @@ sealed class CentralProcessingUnit
             case 0x55: // LD D, L
                 registers.D = registers.L;
                 break;
-            case 0x56: // LD D, HL
+            case 0x56: // LD D, (HL)
+                registers.D = memory[index: registers.HL];
                 break;
             case 0x57: // LD D, A
                 registers.D = registers.A;
@@ -219,7 +242,8 @@ sealed class CentralProcessingUnit
             case 0x5D: // LD E, L
                 registers.E = registers.L;
                 break;
-            case 0x5E: // LD E, HL
+            case 0x5E: // LD E, (HL)
+                registers.E = memory[index: registers.HL];
                 break;
             case 0x5F: // LD E, A
                 registers.E = registers.A;
@@ -241,7 +265,8 @@ sealed class CentralProcessingUnit
             case 0x65: // LD H, L
                 registers.H = registers.L;
                 break;
-            case 0x66: // LD H, HL
+            case 0x66: // LD H, (HL)
+                registers.H = memory[index: registers.HL];
                 break;
             case 0x67: // LD H, A
                 registers.H = registers.A;
@@ -263,12 +288,34 @@ sealed class CentralProcessingUnit
                 break;
             case 0x6D: // LD L, L
                 break;
-            case 0x6E: // LD L, HL
+            case 0x6E: // LD L, (HL)
+                registers.L = memory[index: registers.HL];
                 break;
             case 0x6F: // LD L, A
                 registers.L = registers.A;
                 break;
+            case 0x70: // LD (HL), B
+                memory[index: registers.HL] = registers.B;
+                break;
+            case 0x71: // LD (HL), C
+                memory[index: registers.HL] = registers.C;
+                break;
+            case 0x72: // LD (HL), D
+                memory[index: registers.HL] = registers.D;
+                break;
+            case 0x73: // LD (HL), E
+                memory[index: registers.HL] = registers.E;
+                break;
+            case 0x74: // LD (HL), H
+                memory[index: registers.HL] = registers.H;
+                break;
+            case 0x75: // LD (HL), L
+                memory[index: registers.HL] = registers.L;
+                break;
             case 0x76: // HALT
+                break;
+            case 0x77: // LD (HL), A
+                memory[index: registers.HL] = registers.A;
                 break;
             case 0x78: // LD A, B
                 registers.A = registers.B;
@@ -288,251 +335,252 @@ sealed class CentralProcessingUnit
             case 0x7D: // LD A, L
                 registers.A = registers.L;
                 break;
-            case 0x7E: // LD A, HL
+            case 0x7E: // LD A, (HL)
+                registers.A = memory[index: registers.HL];
                 break;
             case 0x7F: // LD A, A
                 break;
-            case 0x80: // ADD B
+            case 0x80: // ADD A, B
                 registers.A = registers.A.Add(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0x81: // ADD C
+            case 0x81: // ADD A, C
                 registers.A = registers.A.Add(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0x82: // ADD D
+            case 0x82: // ADD A, D
                 registers.A = registers.A.Add(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0x83: // ADD E
+            case 0x83: // ADD A, E
                 registers.A = registers.A.Add(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0x84: // ADD H
+            case 0x84: // ADD A, H
                 registers.A = registers.A.Add(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0x85: // ADD L
+            case 0x85: // ADD A, L
                 registers.A = registers.A.Add(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0x86: // ADD A, HL
+            case 0x86: // ADD A, (HL)
                 break;
-            case 0x87: // ADD A
+            case 0x87: // ADD A, A
                 registers.A = registers.A.Add(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0x88: // ADC B
+            case 0x88: // ADC A, B
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0x89: // ADC C
+            case 0x89: // ADC A, C
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0x8A: // ADC D
+            case 0x8A: // ADC A, D
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0x8B: // ADC E
+            case 0x8B: // ADC A, E
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0x8C: // ADC H
+            case 0x8C: // ADC A, H
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0x8D: // ADC L
+            case 0x8D: // ADC A, L
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0x8E: // ADC A, HL
+            case 0x8E: // ADC A, (HL)
                 break;
-            case 0x8F: // ADC A
+            case 0x8F: // ADC A, A
                 registers.A = registers.A.Adc(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0x90: // SUB B
+            case 0x90: // SUB A, B
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0x91: // SUB C
+            case 0x91: // SUB A, C
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0x92: // SUB D
+            case 0x92: // SUB A, D
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0x93: // SUB E
+            case 0x93: // SUB A, E
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0x94: // SUB H
+            case 0x94: // SUB A, H
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0x95: // SUB L
+            case 0x95: // SUB A, L
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0x96: // SUB A, HL
+            case 0x96: // SUB A, (HL)
                 break;
-            case 0x97: // SUB A
+            case 0x97: // SUB A, A
                 registers.A = registers.A.Sub(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0x98: // SBC B
+            case 0x98: // SBC A, B
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0x99: // SBC C
+            case 0x99: // SBC A, C
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0x9A: // SBC D
+            case 0x9A: // SBC A, D
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0x9B: // SBC E
+            case 0x9B: // SBC A, E
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0x9C: // SBC H
+            case 0x9C: // SBC A, H
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0x9D: // SBC L
+            case 0x9D: // SBC A, L
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0x9E: // SBC HL
+            case 0x9E: // SBC A, (HL)
                 break;
-            case 0x9F: // SBC A
+            case 0x9F: // SBC A, A
                 registers.A = registers.A.Sbc(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA0: // AND B
+            case 0xA0: // AND A, B
                 registers.A = registers.A.And(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA1: // AND C
+            case 0xA1: // AND A, C
                 registers.A = registers.A.And(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA2: // AND D
+            case 0xA2: // AND A, D
                 registers.A = registers.A.And(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA3: // AND E
+            case 0xA3: // AND A, E
                 registers.A = registers.A.And(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA4: // AND H
+            case 0xA4: // AND A, H
                 registers.A = registers.A.And(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA5: // AND L
+            case 0xA5: // AND A, L
                 registers.A = registers.A.And(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA6: // AND HL
+            case 0xA6: // AND A, (HL)
                 break;
-            case 0xA7: // AND A
+            case 0xA7: // AND A, A
                 registers.A = registers.A.And(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA8: // XOR B
+            case 0xA8: // XOR A, B
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0xA9: // XOR C
+            case 0xA9: // XOR A, C
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0xAA: // XOR D
+            case 0xAA: // XOR A, D
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0xAB: // XOR E
+            case 0xAB: // XOR A, E
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0xAC: // XOR H
+            case 0xAC: // XOR A, H
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0xAD: // XOR L
+            case 0xAD: // XOR A, L
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0xAE: // XOR HL
+            case 0xAE: // XOR A, (HL)
                 break;
-            case 0xAF: // XOR A
+            case 0xAF: // XOR A, A
                 registers.A = registers.A.Xor(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB0: // OR B
+            case 0xB0: // OR A, B
                 registers.A = registers.A.Or(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB1: // OR C
+            case 0xB1: // OR A, C
                 registers.A = registers.A.Or(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB2: // OR D
+            case 0xB2: // OR A, D
                 registers.A = registers.A.Or(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB3: // OR E
+            case 0xB3: // OR A, E
                 registers.A = registers.A.Or(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB4: // OR H
+            case 0xB4: // OR A, H
                 registers.A = registers.A.Or(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB5: // OR L
+            case 0xB5: // OR A, L
                 registers.A = registers.A.Or(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB6: // OR HL
+            case 0xB6: // OR A, (HL)
                 break;
-            case 0xB7: // OR A
+            case 0xB7: // OR A, A
                 registers.A = registers.A.Or(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB8: // CP B
+            case 0xB8: // CP A, B
                 registers.A.Cp(flags: ref flags, other: registers.B);
                 registers.F = ((byte)flags);
                 break;
-            case 0xB9: // CP C
+            case 0xB9: // CP A, C
                 registers.A.Cp(flags: ref flags, other: registers.C);
                 registers.F = ((byte)flags);
                 break;
-            case 0xBA: // CP D
+            case 0xBA: // CP A, D
                 registers.A.Cp(flags: ref flags, other: registers.D);
                 registers.F = ((byte)flags);
                 break;
-            case 0xBB: // CP E
+            case 0xBB: // CP A, E
                 registers.A.Cp(flags: ref flags, other: registers.E);
                 registers.F = ((byte)flags);
                 break;
-            case 0xBC: // CP H
+            case 0xBC: // CP A, H
                 registers.A.Cp(flags: ref flags, other: registers.H);
                 registers.F = ((byte)flags);
                 break;
-            case 0xBD: // CP L
+            case 0xBD: // CP A, L
                 registers.A.Cp(flags: ref flags, other: registers.L);
                 registers.F = ((byte)flags);
                 break;
-            case 0xBE: // CP HL
+            case 0xBE: // CP A, (HL)
                 break;
-            case 0xBF: // CP A
+            case 0xBF: // CP A, A
                 registers.A.Cp(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
-            case 0xC6: // ADD N
+            case 0xC6: // ADD A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Add(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
@@ -543,48 +591,41 @@ sealed class CentralProcessingUnit
                 programCounter = registers.IncrementProgramCounter();
 
                 switch (memory[index: programCounter]) {
-                    case 0x0E: // RRC HL
-                        break;
-                    case 0x1E: // RR HL
-                        break;
-                    case 0x2E: // SRA HL
-                        break;
-                    case 0x3E: // SRL HL
-                        break;
                     default:
                         throw new NotSupportedException();
                 }
+
                 break;
-            case 0xCE: // ADC N
+            case 0xCE: // ADC A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Adc(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
                 break;
-            case 0xD6: // SUB N
+            case 0xD6: // SUB A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Sub(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xD9: // RETI
                 break;
-            case 0xDE: // SBC N
+            case 0xDE: // SBC A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
                 break;
-            case 0xE6: // AND N
+            case 0xE6: // AND A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.And(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
                 break;
-            case 0xEE: // XOR N
+            case 0xEE: // XOR A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Xor(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xF3: // DI
                 break;
-            case 0xF6: // OR N
+            case 0xF6: // OR A, D8
                 programCounter = registers.IncrementProgramCounter();
                 registers.A = registers.A.Or(flags: ref flags, other: memory[index: programCounter]);
                 registers.F = ((byte)flags);
