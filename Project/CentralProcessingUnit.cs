@@ -26,8 +26,8 @@ sealed class CentralProcessingUnit
         var memory = Memory;
         var programCounter = m_registers.PC;
         var registers = m_registers;
-        var tickCount = ++m_tickCount;
-        var tempU16 = ushort.MinValue;
+
+        ushort tempU16;
 
         switch (memory[index: programCounter]) {
             case 0x00: // NOOP
@@ -695,6 +695,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xC0: // RET NZ
+                if (!Flags.Z) {
+                    programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
+                }
                 break;
             case 0xC1: // POP BC
                 memory[index: registers.SP++] = registers.C;
@@ -711,6 +714,13 @@ sealed class CentralProcessingUnit
                 programCounter = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
                 break;
             case 0xC4: // CALL NZ, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (!Flags.Z) {
+                    memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                    memory[index: --registers.SP] = ((byte)programCounter);
+                    programCounter = tempU16;
+                }
                 break;
             case 0xC5: // PUSH BC
                 memory[index: registers.SP--] = registers.B;
@@ -721,10 +731,17 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xC7: // RST 0
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 0;
                 break;
             case 0xC8: // RET Z
+                if (Flags.Z) {
+                    programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
+                }
                 break;
             case 0xC9: // RET
+                programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
                 break;
             case 0xCA: // JP Z, D16
                 tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
@@ -741,16 +758,33 @@ sealed class CentralProcessingUnit
 
                 break;
             case 0xCC: // CALL Z, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (Flags.Z) {
+                    memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                    memory[index: --registers.SP] = ((byte)programCounter);
+                    programCounter = tempU16;
+                }
                 break;
             case 0xCD: // CALL D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = tempU16;
                 break;
             case 0xCE: // ADC A, D8
                 registers.A = registers.A.Adc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
             case 0xCF: // RST 1
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 8;
                 break;
             case 0xD0: // RET NC
+                if (!Flags.C) {
+                    programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
+                }
                 break;
             case 0xD1: // POP DE
                 memory[index: registers.SP++] = registers.E;
@@ -766,6 +800,13 @@ sealed class CentralProcessingUnit
             case 0xD3: // UNDEFINED
                 break;
             case 0xD4: // CALL NC, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (!Flags.C) {
+                    memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                    memory[index: --registers.SP] = ((byte)programCounter);
+                    programCounter = tempU16;
+                }
                 break;
             case 0xD5: // PUSH DE
                 memory[index: registers.SP--] = registers.D;
@@ -776,10 +817,18 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xD7: // RST 2
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 16;
                 break;
             case 0xD8: // RET C
+                if (Flags.C) {
+                    programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
+                }
                 break;
             case 0xD9: // RETI
+                programCounter = ((ushort)(memory[index: registers.SP++] | (memory[index: registers.SP++] << 8)));
+                Flags.SetIme();
                 break;
             case 0xDA: // JP C, D16
                 tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
@@ -791,6 +840,13 @@ sealed class CentralProcessingUnit
             case 0xDB: // UNDEFINED
                 break;
             case 0xDC: // CALL C, D16
+                tempU16 = ((ushort)(memory[index: ++programCounter] | (memory[index: ++programCounter] << 8)));
+
+                if (Flags.C) {
+                    memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                    memory[index: --registers.SP] = ((byte)programCounter);
+                    programCounter = tempU16;
+                }
                 break;
             case 0xDD: // UNDEFINED
                 break;
@@ -799,6 +855,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xDF: // RST 3
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 24;
                 break;
             case 0xE0: // LD (D8), A
                 break;
@@ -821,6 +880,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xE7: // RST 4
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 32;
                 break;
             case 0xE8: // ADD SP, D8
                 break;
@@ -840,6 +902,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xEF: // RST 5
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 40;
                 break;
             case 0xF0: // LD A, (D8)
                 break;
@@ -862,6 +927,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xF7: // RST 6
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 48;
                 break;
             case 0xF8: // ???
                 break;
@@ -881,6 +949,9 @@ sealed class CentralProcessingUnit
                 registers.F = ((byte)flags);
                 break;
             case 0xFF: // RST 7
+                memory[index: --registers.SP] = ((byte)(programCounter >> 8));
+                memory[index: --registers.SP] = ((byte)programCounter);
+                programCounter = 56;
                 break;
             default:
                 throw new NotSupportedException();
