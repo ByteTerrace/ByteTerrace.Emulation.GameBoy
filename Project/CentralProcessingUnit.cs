@@ -13,12 +13,12 @@ sealed class CentralProcessingUnit
     public uint TickCount { get => m_tickCount; }
 
     public CentralProcessingUnit() {
-        var clockCycle = 0U;
         var memory = new Memory();
         var registers = new Registers();
+        var tickCount = 0U;
 
-        m_tickCount = clockCycle;
         m_registers = registers;
+        m_tickCount = tickCount;
 
         Flags = new Flags(registers: registers);
         Memory = memory;
@@ -589,9 +589,19 @@ sealed class CentralProcessingUnit
                 registers.A.Cp(flags: ref flags, other: registers.A);
                 registers.F = ((byte)flags);
                 break;
+            case 0xC0: // RET NZ
+                break;
+            case 0xC1: // POP BC
+                break;
+            case 0xC5: // PUSH BC
+                break;
             case 0xC6: // ADD A, D8
                 registers.A = registers.A.Add(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
+                break;
+            case 0xC7: // RST 0
+                break;
+            case 0xC8: // RET Z
                 break;
             case 0xC9: // RET
                 break;
@@ -606,9 +616,21 @@ sealed class CentralProcessingUnit
                 registers.A = registers.A.Adc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
+            case 0xCF: // RST 1
+                break;
+            case 0xD0: // RET NC
+                break;
+            case 0xD1: // POP DE
+                break;
+            case 0xD5: // PUSH DE
+                break;
             case 0xD6: // SUB A, D8
                 registers.A = registers.A.Sub(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
+                break;
+            case 0xD7: // RST 2
+                break;
+            case 0xD8: // RET C
                 break;
             case 0xD9: // RETI
                 break;
@@ -616,21 +638,45 @@ sealed class CentralProcessingUnit
                 registers.A = registers.A.Sbc(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
+            case 0xDF: // RST 3
+                break;
+            case 0xE1: // POP HL
+                break;
+            case 0xE5: // PUSH HL
+                break;
             case 0xE6: // AND A, D8
                 registers.A = registers.A.And(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
+                break;
+            case 0xE7: // RST 4
+                break;
+            case 0xE9: // JP HL
                 break;
             case 0xEE: // XOR A, D8
                 registers.A = registers.A.Xor(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
+            case 0xEF: // RST 5
+                break;
+            case 0xF1: // POP AF
+                break;
             case 0xF3: // DI
+                break;
+            case 0xF5: // PUSH AF
                 break;
             case 0xF6: // OR A, D8
                 registers.A = registers.A.Or(flags: ref flags, other: memory[index: ++programCounter]);
                 registers.F = ((byte)flags);
                 break;
+            case 0xF7: // RST 6
+                break;
             case 0xFB: // EI
+                break;
+            case 0xFE: // CP A, D8
+                registers.A.Cp(flags: ref flags, other: memory[index: ++programCounter]);
+                registers.F = ((byte)flags);
+                break;
+            case 0xFF: // RST 7
                 break;
             default:
                 throw new NotSupportedException();
