@@ -151,6 +151,7 @@ sealed class CentralProcessingUnit
                 registers.H = memory[index: programCounter++];
                 break;
             case 0x27: // DAA
+                registers.A = registers.A.Daa(flags: ref flagsValue);
                 break;
             case 0x28: // JR Z, D8
                 tempU16 = memory[index: programCounter++];
