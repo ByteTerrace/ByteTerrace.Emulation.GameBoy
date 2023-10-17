@@ -5,6 +5,7 @@ sealed class Memory
     private readonly byte[] m_value;
 
     public ref byte this[int index] => ref m_value[index];
+    public ref byte BootRomControlRegister { get => ref m_value.AsSpan()[65360..65361][0]; }
     public ref byte DividerRegister { get => ref m_value.AsSpan()[65284..65285][0]; }
     public Span<byte> EchoRam { get => m_value.AsSpan()[57344..65024]; }
     public Span<byte> ExternalRam { get => m_value.AsSpan()[40960..49152]; }
@@ -13,9 +14,9 @@ sealed class Memory
     public ref byte InterruptEnableRegister { get => ref m_value.AsSpan()[65535..][0]; }
     public ref byte JoypadRegister { get => ref m_value.AsSpan()[65280..65281][0]; }
     public Span<byte> IoRegisters { get => m_value.AsSpan()[65280..65408]; }
-    public ref byte LcdStatusRegister { get => ref m_value.AsSpan()[65345..65346][0]; }
     public Span<byte> NotUsable { get => m_value.AsSpan()[65184..65280]; }
     public Span<byte> ObjectAttributeMemory { get => m_value.AsSpan()[65024..65184]; }
+    public ref byte PictureProcessingUnitStatusRegister { get => ref m_value.AsSpan()[65345..65346][0]; }
     public Span<byte> RomBankA { get => m_value.AsSpan()[0..16384]; }
     public Span<byte> RomBankB { get => m_value.AsSpan()[16384..32768]; }
     public ref byte TimerControlRegister { get => ref m_value.AsSpan()[65287..65288][0]; }
@@ -42,19 +43,25 @@ sealed class Memory
             case 0x07: // TAC
                 return TimerControlRegister;
             case 0x0F: // IF
-                return ((byte)(InterruptAssertedRegister | 0xE0));
+                return InterruptAssertedRegister;
             case 0x41: // STAT
-                return LcdStatusRegister;
+                return PictureProcessingUnitStatusRegister;
+            case 0x46: // DMA
+                throw new NotImplementedException();
+            case 0x4D: // KEY1
+                throw new NotImplementedException();
+            case 0x50: // BOOT
+                return BootRomControlRegister;
             case 0xFF: // IE
-                return ((byte)(InterruptEnableRegister | 0xE0));
+                return InterruptEnableRegister;
             default:
                 throw new NotImplementedException();
         }
     }
     public void WritePort(byte port, byte value) {
         switch (port) {
-            case 0x00: // JOYP
-                JoypadRegister = ((byte)(value & 0xF0));
+            case 0x00: // JOYP (11XXYYYY)
+                JoypadRegister = ((byte)(0b11000000 | (value & 0b00110000) | (JoypadRegister & 0b00001111)));
                 break;
             case 0x04: // DIV
                 DividerRegister = 0;
@@ -65,17 +72,24 @@ sealed class Memory
             case 0x06: // TMA
                 TimerModuloRegister = value;
                 break;
-            case 0x07: // TAC
-                TimerControlRegister = ((byte)(value & 0x07));
+            case 0x07: // TAC (11111XXX)
+                TimerControlRegister = ((byte)(0b11111000 | (value & 0b00000111)));
                 break;
-            case 0x0F: // IF
-                InterruptAssertedRegister = value;
+            case 0x0F: // IF (111XXXXX)
+                InterruptAssertedRegister = ((byte)(0b11100000 | (value & 0b00011111)));
                 break;
-            case 0x41: // STAT
-                LcdStatusRegister = ((byte)(value & 0x78));
+            case 0x41: // STAT (1XXXXYYY)
+                PictureProcessingUnitStatusRegister = (byte)(0b10000000 | (value & 0b01111000) | (PictureProcessingUnitStatusRegister & 0b00000111));
                 break;
-            case 0xFF: // IE
-                InterruptEnableRegister = value;
+            case 0x46: // DMA
+                throw new NotImplementedException();
+            case 0x4D: // KEY1
+                throw new NotImplementedException();
+            case 0x50: // BOOT (1111111X)
+                BootRomControlRegister = ((byte)(0x11111110 | (value & 0b00000001)));
+                break;
+            case 0xFF: // IE (111XXXXX)
+                InterruptEnableRegister = ((byte)(0b11100000 | (value & 0b00011111)));
                 break;
             default:
                 throw new NotImplementedException();
