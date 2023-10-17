@@ -2,26 +2,27 @@
 
 sealed class CentralProcessingUnit
 {
-    private FlagsHelper m_flagsHelper;
+    private readonly FlagsHelper m_flagsHelper;
+
+    private uint m_clockCycle;
     private Registers m_registers;
-    private uint m_tickCount;
 
     public Memory Memory { get; }
-    public uint TickCount { get => m_tickCount; }
 
     public CentralProcessingUnit() {
+        var flagsHelper = new FlagsHelper();
         var memory = new Memory();
         var registers = new Registers();
-        var tickCount = 0U;
 
-        m_flagsHelper = new FlagsHelper();
+        m_clockCycle = 0U;
+        m_flagsHelper = flagsHelper;
         m_registers = registers;
-        m_tickCount = tickCount;
 
         Memory = memory;
     }
 
     public bool MoveNext() {
+        var clockCycle = m_clockCycle;
         var flagsHelper = m_flagsHelper;
         var flagsValue = ((uint)m_registers.F);
         var memory = Memory;
@@ -872,6 +873,7 @@ sealed class CentralProcessingUnit
         registers.F = ((byte)flagsValue);
         registers.PC = programCounter;
 
+        m_clockCycle = (clockCycle + 4U);
         m_registers = registers;
 
         return true;

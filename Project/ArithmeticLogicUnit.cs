@@ -60,7 +60,7 @@ public static class ArithmeticLogicUnit
     public static byte And(this byte value, byte other, ref uint flags) {
         var result = (value & other);
 
-        flags = ((byte)(32 | (Convert.ToByte(value: (0 == result)) << 7)));
+        flags = ((byte)(32 | (Convert.ToByte(value: (0 == result)) << IndexZ)));
 
         return ((byte)result);
     }
@@ -94,7 +94,7 @@ public static class ArithmeticLogicUnit
                 value -= 0x60;
             }
             if (BitHelper.HasFlag(n: IndexH, value: flags)) {
-                value -= 0x6;
+                value -= 0x06;
             }
         }
         else {
@@ -104,7 +104,7 @@ public static class ArithmeticLogicUnit
                 BitHelper.SetFlag(flag: true, n: IndexC, value: ref flags);
             }
             if (BitHelper.HasFlag(n: IndexH, value: flags) || ((value & 0x0F) > 0x09)) {
-                value += 0x6;
+                value += 0x06;
             }
         }
 
